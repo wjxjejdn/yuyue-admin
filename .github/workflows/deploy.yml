@@ -1,0 +1,33 @@
+name: Deploy Admin Web
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy Frontend
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          
+          cd /opt/yuyue/admin-web
+          
+          git pull
+          
+          npm install
+          npm run build
+          
+          cp -r dist/* /var/www/admin-html/
+          
+          EOF
